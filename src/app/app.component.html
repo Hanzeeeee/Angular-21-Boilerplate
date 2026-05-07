@@ -1,0 +1,19 @@
+<nav class="navbar navbar-expand navbar-dark bg-dark" *ngIf="account">
+  <div class="container-fluid">
+    <a class="navbar-brand">Angular 21 Auth Boilerplate</a>
+    <div class="navbar-nav ms-auto">
+      <a class="nav-link" routerLink="/">Home</a>
+      <a class="nav-link" routerLink="/profile">Profile</a>
+      <a class="nav-link" routerLink="/admin" *ngIf="isAdmin">Admin</a>
+      <a class="nav-link" (click)="logout()">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Main content -->
+<app-alert id="main-alert"></app-alert>
+
+<router-outlet></router-outlet>
+
+<!-- Subnav router outlet for admin section -->
+<router-outlet name="subnav"></router-outlet>

@@ -1,0 +1,13 @@
+<div *ngIf="account">
+  <h1>Profile</h1>
+
+  <div class="card">
+    <h5 class="card-header">Profile Details</h5>
+    <div class="card-body">
+      <strong>Name:</strong> {{ account.firstName }} {{ account.lastName }}<br />
+      <strong>Email:</strong> {{ account.email }}<br />
+    </div>
+  </div>
+
+  <a routerLink="update" class="btn btn-primary mt-2">Update Profile</a>
+</div>
