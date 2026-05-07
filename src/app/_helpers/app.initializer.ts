@@ -1,16 +1,10 @@
-import { Injectable } from '@angular/core';
-import { AccountService } from '@app/_services';
+import { catchError, of } from "rxjs";
 
-@Injectable({ providedIn: 'root' })
-export class AppInitializer {
-  constructor(private accountService: AccountService) { }
+import { AccountService } from "@app/_services";
 
-  initialize() {
-    return new Promise<void>((resolve) => {
-      this.accountService.refreshToken().subscribe({
-        next: () => resolve(),
-        error: () => resolve()
-      });
-    });
-  }
+export function appInitializer(accountService: AccountService) {
+  return () => accountService.refreshToken()
+  .pipe(catchError(() => of())
+);
+
 }

@@ -1,4 +1,4 @@
-# Angular 21 Auth Boilerplate
+# Angular 21 Auth Boilerplate - CHRIST HANZEN RALLOS - BSIT - 3 
 
 A comprehensive Angular 21 authentication boilerplate featuring sign-up with email verification, login, password reset, and role-based authorization.
 
