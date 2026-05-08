@@ -9,13 +9,13 @@ import { UpdateComponent } from './update.component';
     @NgModule({
       declarations: [
           LayoutComponent,
-          DetailsComponent,
-          UpdateComponent
+          DetailsComponent
       ],
       imports: [
           CommonModule,
           ReactiveFormsModule,
-          ProfileRoutingModule
+          ProfileRoutingModule,
+          UpdateComponent
       ]
     })
     export class ProfileModule { }
