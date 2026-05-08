@@ -1,350 +1,289 @@
+
 import { Injectable } from '@angular/core';
-import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { environment } from '@environments/environment';
-import { AlertService, AccountService } from '@app/_services';
-import { Account, Role } from '@app/_models';
+import { HttpRequest, HttpResponse, HttpHandler, HttpEvent, HttpInterceptor, HTTP_INTERCEPTORS } from '@angular/common/http'; import { Observable, of, throwError } from 'rxjs';
+import { delay, materialize, dematerialize } from 'rxjs/operators';
+import { AlertService } from '@app/_services';
+import { Role } from '@app/_nodels';
+        
+          const accountsKey = 'angular-15-signup-verification-boilerplate-accounts';
+          let accounts: any[] = JSON.parse(localStorage.getItem(accountsKey)!) || [];
+      @Injectable()
+      export class FakeBackend Interceptor implements HttpInterceptor {
+      constructor(private alertService: AlertService) { }
+      intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> { const { url, method, headers, body } = request;
+      const alertService = this.alertService;
 
-const accounts: Account[] = [];
+      return handleRoute();
 
-@Injectable()
-export class FakeBackendInterceptor implements HttpInterceptor {
-  constructor(
-    private alertService: AlertService,
-    private accountService: AccountService
-  ) { }
-
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const { url, method, headers, body } = request;
-
-    return handleRoute();
-
-    function handleRoute() {
+      function handleRoute() {
       switch (true) {
-        case url.match(/\/accounts\/authenticate$/) && method === 'POST':
-          return authenticate();
-        case url.match(/\/accounts\/register$/) && method === 'POST':
-          return register();
-        case url.match(/\/accounts\/verify-email$/) && method === 'POST':
-          return verifyEmail();
-        case url.match(/\/accounts\/forgot-password$/) && method === 'POST':
-          return forgotPassword();
-        case url.match(/\/accounts\/validate-reset-token$/) && method === 'POST':
-          return validateResetToken();
-        case url.match(/\/accounts\/reset-password$/) && method === 'POST':
-          return resetPassword();
-        case url.match(/\/accounts\/refresh-token$/) && method === 'POST':
-          return refreshToken();
-        case url.match(/\/accounts\/revoke-token$/) && method === 'POST':
-          return revokeToken();
-        case url.match(/\/accounts$/) && method === 'GET':
-          return getAccounts();
+        case url.endsWith('/accounts/authenticate') && method === 'POST':
+        return authenticate();
+        case url.endsWith('/accounts/refresh-token') && method === 'POST':
+        return refreshToken();
+        case url.endsWith('/accounts/revoke-token') && method === 'POST':
+        return revokeToken();
+        case url.endsWith('/accounts/register') && method === 'POST':
+        return register();
+        case url.endsWith('/accounts/verify-email') && method === 'POST':
+        return verifyEmail();
+        case url.endsWith('/accounts/forgot-password') && method === 'POST':
+        return forgotPassword();
+        case url.endsWith('/accounts/validate-reset-token') && method === 'POST':
+        return validateResetToken();
+        case url.endsWith('/accounts/reset-password') && method === 'POST':
+        return resetPassword();
+        case url.endsWith('/accounts') && method === 'GET':
+        return getAccounts();
         case url.match(/\/accounts\/\d+$/) && method === 'GET':
-          return getAccountById();
-        case url.match(/\/accounts$/) && method === 'POST':
-          return createAccount();
+        return getAccountById();
+        case url.endsWith('/accounts') && method === 'POST':
+        return createAccount();
         case url.match(/\/accounts\/\d+$/) && method === 'PUT':
-          return updateAccount();
-        case url.match(/\/accounts\/\d+$/) && method === 'DELETE':
-          return deleteAccount();
+        return updateAccount();
+        case url.match(/\/accounts\/\d+$/) && method === 'DELETE': return deleteAccount();
         default:
-          return next.handle(request);
+
+        return next.handle(request);
       }
     }
 
+    
     function authenticate() {
-      const { email, password } = body;
-      const account = accounts.find(x => x.email === email && x.email && password);
-
-      if (!account) {
-        return errorResponse('Email or password is incorrect');
-      }
-
-      return okResponse(jwt(account));
-    }
-
-    function register() {
-      const account = body;
-
-      if (accounts.find(x => x.email === account.email)) {
-        return errorResponse('Email already registered');
-      }
-
-      if (accounts.length === 0) {
-        account.role = Role.Admin;
-      } else {
-        account.role = Role.User;
-      }
-
-      account.id = getId();
-      account.dateCreated = new Date();
-      account.isVerified = false;
-      accounts.push(account);
-
-      const token = generateVerifyEmailToken();
-      const verifyUrl = `${environment.appUrl}/account/verify-email?token=${token}`;
-
-      this.alertService.info(`Verification Email\n\nTo verify your account please click the link below:\n\n${verifyUrl}\n\nThis link expires after 24 hours.`);
-
-      return okResponse();
-    }
-
-    function verifyEmail() {
-      const { token } = body;
-      const account = accounts.find(x => x.verifyEmailToken === token && new Date(x.verifyEmailExpires) > new Date());
-
-      if (!account) {
-        return errorResponse('Verify email token is invalid');
-      }
-
-      account.verified = new Date();
-      account.isVerified = true;
-
-      return okResponse();
-    }
-
-    function forgotPassword() {
-      const { email } = body;
-      const account = accounts.find(x => x.email === email);
-
-      if (!account) {
-        return okResponse();
-      }
-
-      const token = generateResetToken();
-      account.resetToken = token;
-      account.resetTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-      const resetUrl = `${environment.appUrl}/account/reset-password?token=${token}`;
-
-      this.alertService.info(`Forgot Password Email\n\nTo reset your password please click the link below:\n\n${resetUrl}\n\nThis link expires after 24 hours.`);
-
-      return okResponse();
-    }
-
-    function validateResetToken() {
-      const { token } = body;
-      const account = accounts.find(x => x.resetToken === token && new Date(x.resetTokenExpires) > new Date());
-
-      if (!account) {
-        return errorResponse('Reset token is invalid');
-      }
-
-      return okResponse();
-    }
-
-    function resetPassword() {
-      const { token, password, confirmPassword } = body;
-
-      if (password !== confirmPassword) {
-        return errorResponse('Password and confirm password do not match');
-      }
-
-      const account = accounts.find(x => x.resetToken === token && new Date(x.resetTokenExpires) > new Date());
-
-      if (!account) {
-        return errorResponse('Reset token is invalid');
-      }
-
-      account.password = password;
-      account.resetToken = null;
-      account.resetTokenExpires = null;
-
-      return okResponse();
-    }
-
-    function refreshToken() {
-      const account = this.accountService.accountValue;
-
-      if (!account) {
-        return errorResponse('Invalid token');
-      }
-
-      const refreshedAccount = accounts.find(x => x.id === account.id);
-
-      if (!refreshedAccount) {
-        return errorResponse('Invalid token');
-      }
-
-      return okResponse(jwt(refreshedAccount));
-    }
-
-    function revokeToken() {
-      if (!this.accountService.accountValue) {
-        return errorResponse('Invalid token');
-      }
-
-      return okResponse();
-    }
-
-    function getAccounts() {
-      if (!isLoggedIn()) return unauthorized();
-
-      if (!hasRole(Role.Admin)) return forbidden();
-
-      return okResponse(accounts.map(x => omitPassword(x)));
-    }
-
-    function getAccountById() {
-      if (!isLoggedIn()) return unauthorized();
-
-      const account = this.accountService.accountValue;
-      const id = getRouteId();
-
-      if (id !== account?.id && !hasRole(Role.Admin)) return forbidden();
-
-      const responseAccount = accounts.find(x => x.id == id);
-
-      if (!responseAccount) return notFound();
-
-      return okResponse(omitPassword(responseAccount));
-    }
-
-    function createAccount() {
-      if (!isLoggedIn()) return unauthorized();
-
-      if (!hasRole(Role.Admin)) return forbidden();
-
-      const account = body;
-
-      if (accounts.find(x => x.email === account.email)) {
-        return errorResponse('Email already registered');
-      }
-
-      account.id = getId();
-      account.dateCreated = new Date();
-      account.role = Role.User;
-      account.isVerified = true;
-      accounts.push(account);
-
-      return okResponse();
-    }
-
-    function updateAccount() {
-      if (!isLoggedIn()) return unauthorized();
-
-      const id = getRouteId();
-      const account = this.accountService.accountValue;
-
-      if (id !== account?.id && !hasRole(Role.Admin)) return forbidden();
-
-      const responseAccount = accounts.find(x => x.id == id);
-
-      if (!responseAccount) return notFound();
-
-      if (body.email && responseAccount.email !== body.email && accounts.find(x => x.email === body.email)) {
-        return errorResponse('Email already registered');
-      }
-
-      Object.assign(responseAccount, body);
-
-      return okResponse();
-    }
-
-    function deleteAccount() {
-      if (!isLoggedIn()) return unauthorized();
-
-      const id = getRouteId();
-      const account = this.accountService.accountValue;
-
-      if (id !== account?.id && !hasRole(Role.Admin)) return forbidden();
-
-      const responseAccount = accounts.find(x => x.id == id);
-
-      if (!responseAccount) return notFound();
-
-      accounts.splice(accounts.indexOf(responseAccount), 1);
-
-      return okResponse();
-    }
-
-    function okResponse(body?: any) {
-      return of(new HttpResponse({ status: 200, body })).pipe(delay(500));
-    }
-
-    function errorResponse(message: string) {
-      return throwError(() => ({ status: 400, error: { message } }));
-    }
-
-    function unauthorized() {
-      return throwError(() => ({ status: 401, error: { message: 'Unauthorized' } }));
-    }
-
-    function forbidden() {
-      return throwError(() => ({ status: 403, error: { message: 'Forbidden' } }));
-    }
-
-    function notFound() {
-      return throwError(() => ({ status: 404, error: { message: 'Not Found' } }));
-    }
-
-    function isLoggedIn() {
-      return !!this.accountService.accountValue;
-    }
-
-    function hasRole(role: Role) {
-      return this.accountService.accountValue?.role === role;
-    }
-
-    function omitPassword(account: Account) {
-      const { password, ...accountWithoutPassword } = account;
-      return accountWithoutPassword;
-    }
-
-    function jwt(account: Account) {
-      const token = generateJWT(account);
-      const refreshToken = generateRefreshToken();
-
-      account.jwtToken = token;
-      account.refreshToken = refreshToken;
-      account.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-      return {
-        id: account.id,
-        email: account.email,
-        firstName: account.firstName,
-        lastName: account.lastName,
-        role: account.role,
-        jwtToken: token,
-        refreshToken: refreshToken
-      };
-    }
-
-    function getId() {
-      return accounts.length ? Math.max(...accounts.map(x => parseInt(x.id!))) + 1 : 1;
-    }
+    const { email, password } = body;
+    const account = accounts.find(x => x.email === email && x.password === password && x.isVerified);
+    if (!account) return error('Email or password is incorrect');
+   
+    account.refreshTokens.push(generateRefreshToken());
+    localStorage.setItem(accountsKey, JSON.stringify(accounts));
+    return ok({
+    });
+      ...basicDetails(account),
+      jwtToken: generate JwtToken(account)
+      function refreshToken() {
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) return unauthorized();
+      const account = accounts.find(x => x.refreshTokens.includes (refreshToken));
+      if (!account) return unauthorized();
+
+    account.refreshTokens = account.refreshTokens.filter((x: any) => x !== refreshToken); account.refreshTokens.push(generateRefreshToken());
+    localStorage.setItem(accountsKey, JSON.stringify(accounts));
+    return ok({
+    });
+    ...basicDetails (account),
+    jwtToken: generate JwtToken (account)
+    });
   }
+
+  
+function revokeToken() {
+if (!isAuthenticated()) return unauthorized();
+const refreshToken = getRefreshToken();
+const account = accounts.find(x => x.refreshTokens.includes (refreshToken));
+
+account.refreshTokens = account.refreshTokens.filter((x: any) => x !== refreshToken);
+LocalStorage.setItem(accountsKey, JSON.stringify(accounts));
+return ok();
+}
+function register() {
+const account = body;
+if (accounts.find(x => x.email === account.email)) {
+
+setTimeout(() => {
+alertService.info("
+<h4>Email Already Registered</h4>
+<p>Your email ${account.email) is already registered.</p>
+<p>If you don't know your password please visit the <a href="${location.origin}/account/forgot-password">forgot password</a> page.</p>
+<div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div> { autoClose: false });
+}, 1000);
+
+return ok();
 }
 
-function generateJWT(account: Account) {
-  const token = {
-    sub: account.id,
-    email: account.email,
-    role: account.role,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + (15 * 60)
-  };
+account.id = newAccountId();
+if (account.id === 1) {
 
-  const header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
-  const payload = btoa(JSON.stringify(token));
-  const signature = btoa('secret');
-
-  return `${header}.${payload}.${signature}`;
+} else {
 }
+Role.Admin;
+account.role = Role.User;
+account.dateCreated = new Date().toISOString();
+account.verificationToken = new Date().getTime().toString();
+account.isVerified = false;
+account.refreshTokens = [];
+delete account.confirmPassword;
+accounts.push(account);
+LocalStorage.setItem(accountsKey, JSON.stringify(accounts));
 
+setTimeout(() => {
+const verifyUrl = `${location.origin}/account/verify-email?token=${account.verificationToken}`; alertService.info("
+<h4>Verification Email</h4>
+<p>Thanks for registering!</p>
+<p>Please click the below link to verify your email address:</p>
+<p><a href="${verifyUrl}">${verifyUrl}</a></p>
+<div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div> { autoClose: false });
+}, 1000);
+return ok();
+function verifyEmail() {
+const {token} = body;
+const account = accounts.find(x => !!x.verificationToken && x.verificationToken ===
+if (!account) return error('Verification failed');
+2
+
+5
+5
+localStorage.setItem(accountskey, JSON.stringify(accounts));
+return ok();
+3
+function forgotPassword() {
+const { email } = body;
+token);
+const account = accounts.find(x => x.email === email);
+
+if (!account) return ok();
+
+account.resetToken = new Date().getTime().toString();
+account.resetTokenExpires= new Date(Date.now() + 24*68*60*1080).toISOString(); LocalStorage.setItem(accountsKey, JSON.stringify(accounts));
+
+setTimeout(() = {
+const reseturl = `${location.origin}/account/reset-password?token=${account.resetToken}`; alertService.info("
+<h4>Reset Password Email</h4>
+<p>Please click the below link to reset your password, the link will be valid for 1 day:</p>
+<p><a href="${resetUrl}">${resetUrl}</a></p>
+<div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email. </div>
+{ autoClose: false });
+}, 1000);
+
+return ok();
+
+
+function validateResetToken() { const {token} = body;
+const account = accounts.find(x =>
+);
+!!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires)
+if (!account) return error('Invalid token');
+return ok();
+}
+function resetPassword() {
+const { token, password } = body;
+const account = accounts.find(x =>
+);
+!!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires)
+if (!account) return error('Invalid token');
+delete account.resetToken;
+delete account.resetTokenExpires;
+localStorage.setItem(accountsKey, JSON.stringify(accounts));
+return ok();
+function getAccounts() {
+}
+if (!isAuthenticated()) return unauthorized(); return ok(accounts.map(x => basic Details(x)));
+function getAccountById() {
+if (!isAuthenticated()) return unauthorized();
+let account = accounts.find(x => x.id === idFromUrl());
+if (account.id !== currentAccount().id && !isAuthorized (Role.Admin)) {
+return unauthorized();
+}
+}
+return ok(basicDetails (account));
+
+
+function createAccount() {
+}
+if (!isAuthorized (Role.Admin)) return unauthorized();
+const account = body;
+if (accounts.find(x => x.email === account.email)) {
+}
+return error("Email ${account.email) is already registered`);
+account.dateCreated = new Date().toISOString();
+account.isVerified = true;
+account.refreshTokens = [];
+delete account.confirmPassword;
+accounts.push(account);
+localStorage.setItem(accountsKey, JSON.stringify(accounts));
+return ok();
+function updateAccount() {
+if (!isAuthenticated()) return unauthorized();
+Let params = body;
+let account = accounts.find(x => x.id === idFromUrl());
+user accounts can update own profile and admin accounts can update all profiles if (account.id !== currentAccount().id && !isAuthorized (Role. Admin)) {
+return unauthorized();
+ᄆ
+}
+}
+if (!params.password) {
+delete params.password;
+}
+delete params.confirmPassword;
+Object.assign(account, params);
+localStorage.setItem(accountsKey, JSON.stringify(accounts));
+return ok(basicDetails (account));
+
+function deleteAccount() {
+if (!isAuthenticated()) return unauthorized();
+let account = accounts.find(x => x.id === idFromUrl());
+
+
+if (account.id !== currentAccount().id && !isAuthorized (Role.Admin)) { return unauthorized();
+}
+accounts = accounts.filter(x => x.id !== idFromUrl()); localStorage.setItem(accountsKey, JSON.stringify(accounts));
+return ok();
+function ok(body?: any) {
+return of (new HttpResponse({ status: 200, body }))
+.pipe(delay(500)); 
+function error (message: string) {
+}
+return throwError(() => ({ error: { message } }))
+.pipe(materialize(), delay (580), dematerialize()); 
+function unauthorized() {
+return throwError(() => ({ status: 401, error: { message: 'Unauthorized' } })) .pipe(materialize(), delay (580), dematerialize());
+ᄆ
+function basicDetails (account: any) {
+const { id, title, firstName, lastName, email, role, dateCreated, isVerified } = account; return { id, title, firstName, lastName, email, role, dateCreated, isVerified };
+function isAuthenticated() {
+return !!currentAccount();
+function isAuthorized(role: any) {
+const account = currentAccount();
+if (!account) return false;
+return account.role === role;
+}
+function idFromUrl() {
+const urlParts = url.split('/');
+return parseInt(urlParts [urlParts.length-1]);
+}
+function newAccountId() {
+}
+return accounts.length? Math.max(...accounts.map(x => x.id)) + 1 : 1;
+function currentAccount() {
+
+  
+const authHeader = headers.get('Authorization');
+if (!authHeader?.startsWith('Bearer fake-jwt-token')) return;
+
+const jwtToken = JSON.parse(atob (authHeader.split('.')[1])); const tokenExpired = Date.now() > (jwtToken.exp* 1000); if (tokenExpired) return;
+const account = accounts.find(x => x.id === jwtToken.id); return account;
+function generateJwtToken(account: any) {
+
+const tokenPayload = {
+}
+exp: Math.round(new Date(Date.now() + 15*68*1888).getTime() / 1888), id: account.id
+return 'fake-jwt-token.${btoa(JSON.stringify(tokenPayload))}';
+}
 function generateRefreshToken() {
-  return 'fake-refresh-token-' + Math.random().toString(36).substr(2, 9);
-}
+const token = new Date().getTime().toString();
 
-function generateVerifyEmailToken() {
-  return 'fake-verify-email-token-' + Math.random().toString(36).substr(2, 9);
+const expires= new Date(Date.now() + 7*24*68*68*1800).toUTCString();
+document.cookie = 'fakeRefreshToken=${token}; expires=${expires}; path=/`;
+return token;
 }
+function getRefreshToken() {
 
-function generateResetToken() {
-  return 'fake-reset-token-' + Math.random().toString(36).substr(2, 9);
-}
+return (document.cookie.split(';').find(x => x.includes ('fakeRefreshToken')) || '=').split('=')[1];
+export let fakeBackend Provider = {
 
-import { HttpResponse } from '@angular/common/http';
-import { throwError } from 'rxjs';
+useClass: FakeBackend Interceptor,
+multi: true
+};
+
+
+
+

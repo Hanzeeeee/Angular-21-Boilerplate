@@ -5,17 +5,18 @@ import { first } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 import { mustMatch } from '@app/_helpers';
 
-@Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html'
-})
+    @Component({
+      selector: 'app-register',
+      templateUrl: './register.component.html'. standalone: false
+    })
 export class RegisterComponent implements OnInit {
   form!: FormGroup;
-  loading = false;
+  submitting = false;
   submitted = false;
 
   constructor(
     private formBuilder: FormBuilder,
+    private route: ActivatedRoute,
     private router: Router,
     private accountService: AccountService,
     private alertService: AlertService
@@ -48,17 +49,18 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.submitting = true;
     this.accountService.register(this.form.value)
       .pipe(first())
       .subscribe({
         next: () => {
-          this.alertService.success('Sign up successful, please check your email for verification instructions');
-          this.router.navigate(['../login'], { relativeTo: null });
+          this.alertService.success('Sign up successful, please check your email for verification instructions', { keepAfterRouteChange: true });
+          this.router.navigate(['../login'], { relativeTo: this.route });
+          
         },
         error: error => {
           this.alertService.error(error);
-          this.loading = false;
+          this.submitting = false;
         }
       });
   }

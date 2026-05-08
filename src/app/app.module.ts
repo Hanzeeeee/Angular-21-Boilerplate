@@ -20,14 +20,15 @@ function initializeApp(appInitializer: AppInitializer) {
   imports: [
     BrowserModule,
     HttpClientModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ReactiveFormsModule
   ],
-  providers: [
-    { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [AppInitializer], multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: FakeBackendInterceptor, multi: true }
-  ],
-  bootstrap: [AppComponent]
-})
+    providers: [
+      { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [AppInitializer], multi: true },
+      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+      { provide: HTTP_INTERCEPTORS, useClass: FakeBackendInterceptor, multi: true }
+    ],
+    bootstrap: [AppComponent]
+  })
 export class AppModule { }

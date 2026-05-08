@@ -1,8 +1,7 @@
-<div *ngIf="tokenStatus === 'Verifying'" class="text-center">
-  <p class="text-muted">Verifying email...</p>
-</div>
 
-<div *ngIf="tokenStatus === 'Failed'" class="alert alert-danger" role="alert">
-  <h4 class="alert-heading">Verification failed</h4>
-  <p>Email verification failed, you can also verify your account using the <a routerLink="../forgot-password">forgot password</a> page.</p>
+<h3 class="card-header">Verify Email</h3> <div class="card-body">
+<div *ngIf="emailStatus == EmailStatus.Verifying"> Verifying...
+</div>
+<div *ngIf="emailStatus == EmailStatus.Failed">
+Verification failed, you can also verify your account using the <a routerLink="forgot-password">forgot password</a> page.
 </div>

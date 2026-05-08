@@ -4,13 +4,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 
-@Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html'
-})
+  @Component({
+    selector: 'app-login',
+    templateUrl: './login.component.html', standalone: false})
+
 export class LoginComponent implements OnInit {
   form!: FormGroup;
-  loading = false;
+  submitting = false;
   submitted = false;
 
   constructor(
@@ -18,7 +18,8 @@ export class LoginComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private accountService: AccountService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {

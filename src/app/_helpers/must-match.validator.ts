@@ -1,22 +1,21 @@
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-export function mustMatch(controlName: string, matchingControlName: string): ValidatorFn {
-  return (formGroup: AbstractControl): ValidationErrors | null => {
-    const control = formGroup.get(controlName);
-    const matchingControl = formGroup.get(matchingControlName);
+import { AbstractControl } from '@angular/forms';
 
-    if (!matchingControl) return null;
+  export function MustMatch(controlName: string, matching ControlName: string) { return (group: AbstractControl) => {
+  const control = group.get(controlName);
+  const matchingControl group.get(matchingControlName);
+  if (!control || !matching Control) {
+  }
+  return null;
 
-    if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
-      return null;
-    }
 
-    if (control.value !== matchingControl.value) {
-      matchingControl.setErrors({ mustMatch: true });
-      return { mustMatch: true };
-    } else {
-      matchingControl.setErrors(null);
-      return null;
-    }
-  };
+  if (matchingControl.errors && !matchingControl.errors.mustMatch) {
+  return null;
+  }
+  if (control.value !== matchingControl.value) {
+  matchingControl.setErrors({ mustMatch: true });
+  } else {
+  matchingControl.setErrors (null);
+  return null;
+  }
 }
