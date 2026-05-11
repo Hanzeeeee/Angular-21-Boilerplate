@@ -10,10 +10,10 @@
     "test": "ng test"
   },
   "private": true,
+  "type": "module",
   "dependencies": {
     "@angular/animations": "^21.2.7",
     "@angular/common": "^21.2.7",
-    "@angular/common/http": "^21.2.7",
     "@angular/compiler": "^21.2.7",
     "@angular/core": "^21.2.7",
     "@angular/forms": "^21.2.7",
@@ -36,5 +36,10 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.9.2"
+  },
+
+  "overrides": {
+    "vite": "^7.3.2"
   }
 }
+  

@@ -4,8 +4,9 @@ import { Account, Role } from '@app/_models';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html'
+  templateUrl: './app.component.html', standalone: false
 })
+
 export class AppComponent implements OnInit {
   account?: Account | null;
 

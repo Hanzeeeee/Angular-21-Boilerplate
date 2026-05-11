@@ -4,7 +4,8 @@ import { Account } from '@app/_models';
 
 @Component({
   selector: 'app-home',
-  templateUrl: './home.component.html'
+  templateUrl: './home.component.html',
+  standalone: false
 })
 export class HomeComponent implements OnInit {
   account?: Account | null;

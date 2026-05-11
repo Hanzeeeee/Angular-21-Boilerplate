@@ -8,6 +8,4 @@ export class Account {
   email?: string;
   role?: Role;
   jwtToken?: string;
-  refreshToken?: string;
-  isDeleting?: boolean;
 }

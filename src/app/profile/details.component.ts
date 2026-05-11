@@ -4,7 +4,7 @@ import { Account } from '@app/_models';
 
 @Component({
   selector: 'app-profile-details',
-  templateUrl: './details.component.html'
+  templateUrl: './details.component.html', standalone: false
 })
 export class DetailsComponent implements OnInit {
   account?: Account | null;

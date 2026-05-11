@@ -6,16 +6,16 @@ import { LayoutComponent } from './layout.component';
 import { DetailsComponent } from './details.component';
 import { UpdateComponent } from './update.component';
 
-@NgModule({
-  declarations: [
-    LayoutComponent,
-    DetailsComponent,
-    UpdateComponent
-  ],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    ProfileRoutingModule
-  ]
-})
-export class ProfileModule { }
+    @NgModule({
+      declarations: [
+          LayoutComponent,
+          DetailsComponent
+      ],
+      imports: [
+          CommonModule,
+          ReactiveFormsModule,
+          ProfileRoutingModule,
+          UpdateComponent
+      ]
+    })
+    export class ProfileModule { }

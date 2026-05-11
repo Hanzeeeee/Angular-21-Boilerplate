@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { first } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 import { mustMatch } from '@app/_helpers';
 
 @Component({
   selector: 'app-profile-update',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './update.component.html'
 })
 export class UpdateComponent implements OnInit {
@@ -39,7 +42,7 @@ export class UpdateComponent implements OnInit {
   }
 
   get f() {
-    return this.form.controls;
+    return this.form.controls as any;
   }
 
   onSubmit() {
@@ -57,10 +60,10 @@ export class UpdateComponent implements OnInit {
       .pipe(first())
       .subscribe({
         next: () => {
-          this.alertService.success('Profile updated successfully');
+          this.alertService.success('Profile updated successfully', { keepAfterRouteChange: true });
           this.router.navigate(['..'], { relativeTo: this.route });
         },
-        error: error => {
+        error: (error: any) => {
           this.alertService.error(error);
           this.loading = false;
         }
@@ -75,9 +78,9 @@ export class UpdateComponent implements OnInit {
         .pipe(first())
         .subscribe({
           next: () => {
-            this.alertService.success('Account deleted successfully');
+            this.alertService.success('Account deleted successfully', { keepAfterRouteChange: true });
           },
-          error: error => {
+          error: (error: any) => {
             this.alertService.error(error);
             this.loading = false;
           }

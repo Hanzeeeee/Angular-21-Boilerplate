@@ -2,9 +2,11 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+    "ignoreDeprecations": "6.0",
     "outDir": "./dist/out-tsc",
     "rootDir": "./src",
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -14,12 +16,11 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
     "useDefineForClassFields": false,
-    "ignoreDeprecations": "6.0",
     "lib": [
       "ES2022",
       "dom"
