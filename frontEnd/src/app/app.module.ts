@@ -22,10 +22,13 @@ import { HomeComponent } from './home/home.component';
     ReactiveFormsModule
   ],
   providers: [
-    { provide: APP_INITIALIZER, useFactory: appInitializer, deps: [AccountService], multi: true },
+    { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+
+    ...(environment.production ? [] : [fakeBackendProvider])
   ],
+
   bootstrap: [AppComponent]
 })
 export class AppModule { }
