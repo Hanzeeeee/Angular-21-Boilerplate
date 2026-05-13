@@ -11,6 +11,8 @@ import { AccountService } from '@app/_services';
 import { AlertComponent } from './_components';
 import { HomeComponent } from './home/home.component';
 
+console.log('Environment production:', environment.production);
+
 @NgModule({
   declarations: [
     AppComponent,
