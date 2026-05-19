@@ -13,6 +13,9 @@ export class AccountService {
   private accountSubject: BehaviorSubject<Account | null>;
   public account: Observable<Account | null>;
   private refreshTokenTimeout?: any;
+  private readonly httpOptions = {
+    headers: { 'Content-Type': 'application/json' }
+  };
 
   constructor(
     private router: Router,
@@ -27,7 +30,7 @@ export class AccountService {
   }
 
   login(email: string, password: string) {
-    return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { withCredentials: true })
+    return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { ...this.httpOptions, withCredentials: true })
       .pipe(map((account: any) => {
         localStorage.setItem('account', JSON.stringify(account));
         this.accountSubject.next(account as Account);
@@ -45,7 +48,7 @@ export class AccountService {
   }
 
   refreshToken() {
-    return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
+    return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { ...this.httpOptions, withCredentials: true })
       .pipe(map((account: any) => {
         localStorage.setItem('account', JSON.stringify(account));
         this.accountSubject.next(account as Account);
@@ -55,23 +58,23 @@ export class AccountService {
   }
 
   register(account: Account) {
-    return this.http.post(`${baseUrl}/register`, account);
+    return this.http.post(`${baseUrl}/register`, account, this.httpOptions);
   }
 
   verifyEmail(token: string) {
-    return this.http.post(`${baseUrl}/verify-email`, { token });
+    return this.http.post(`${baseUrl}/verify-email`, { token }, this.httpOptions);
   }
 
   forgotPassword(email: string) {
-    return this.http.post(`${baseUrl}/forgot-password`, { email });
+    return this.http.post(`${baseUrl}/forgot-password`, { email }, this.httpOptions);
   }
 
   validateResetToken(token: string) {
-    return this.http.post(`${baseUrl}/validate-reset-token`, { token });
+    return this.http.post(`${baseUrl}/validate-reset-token`, { token }, this.httpOptions);
   }
 
   resetPassword(token: string, password: string, confirmPassword: string) {
-    return this.http.post(`${baseUrl}/reset-password`, { token, password, confirmPassword });
+    return this.http.post(`${baseUrl}/reset-password`, { token, password, confirmPassword }, this.httpOptions);
   }
 
   getAll() {
@@ -83,11 +86,11 @@ export class AccountService {
   }
 
   create(params: any) {
-    return this.http.post(baseUrl, params);
+    return this.http.post(baseUrl, params, this.httpOptions);
   }
 
   update(id: string, params: any) {
-    return this.http.put(`${baseUrl}/${id}`, params)
+    return this.http.put(`${baseUrl}/${id}`, params, this.httpOptions)
       .pipe(map((account: any) => {
         if (account.id === this.accountValue?.id) {
           const updatedAccount = { ...this.accountValue, ...account };
