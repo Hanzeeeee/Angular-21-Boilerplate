@@ -40,11 +40,12 @@ export class ResetPasswordComponent implements OnInit {
       validator: mustMatch('password', 'confirmPassword')
     });
 
-    const token = this.route.snapshot.queryParams['token'];
-    this.router.navigate([], { relativeTo: this.route, replaceUrl: true });
-    this.token = token;
+    const token = this.getPasswordResetToken();
+    this.router.navigate([], { relativeTo: this.route, replaceUrl: true, queryParams: {} });
+    this.token = token ?? undefined;
 
     if (!token) {
+      this.alertService.error('Reset token is missing. Please use the link from your email.');
       this.tokenStatus = TokenStatus.Invalid;
       return;
     }
@@ -55,10 +56,22 @@ export class ResetPasswordComponent implements OnInit {
         next: () => {
           this.tokenStatus = TokenStatus.Valid;
         },
-        error: () => {
+        error: (error: any) => {
+          const message = typeof error === 'string'
+            ? error
+            : error?.error?.message || error?.message || 'Reset token validation failed.';
+          this.alertService.error(message);
           this.tokenStatus = TokenStatus.Invalid;
         }
       });
+  }
+
+  private getPasswordResetToken(): string | null {
+    const queryToken = this.route.snapshot.queryParams['token'];
+    const routeToken = this.route.snapshot.paramMap.get('token');
+    return typeof queryToken === 'string' && queryToken.trim()
+      ? queryToken.trim()
+      : routeToken?.trim() || null;
   }
 
   get f() {
