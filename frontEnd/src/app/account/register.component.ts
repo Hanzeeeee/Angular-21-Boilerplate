@@ -50,11 +50,11 @@ export class RegisterComponent implements OnInit {
     }
 
     this.loading = true;
-    const registerRequest = {
+    const registerRequest: RegisterRequest = {
       title: this.f.title.value,
       firstName: this.f.firstName.value,
       lastName: this.f.lastName.value,
-      email: this.f.email.value,
+      email: this.f.email.value.trim(),
       password: this.f.password.value,
       confirmPassword: this.f.confirmPassword.value,
       acceptTerms: this.f.acceptTerms.value

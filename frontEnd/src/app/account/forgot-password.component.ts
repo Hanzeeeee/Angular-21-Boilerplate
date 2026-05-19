@@ -38,7 +38,7 @@ export class ForgotPasswordComponent implements OnInit {
     }
 
     this.loading = true;
-    this.accountService.forgotPassword(this.f.email.value)
+    this.accountService.forgotPassword(this.f.email.value.trim())
       .pipe(
         first(),
         finalize(() => {
@@ -50,7 +50,7 @@ export class ForgotPasswordComponent implements OnInit {
           this.alertService.success('Please check your email for password reset instructions');
         },
         error: (error: any) => {
-          const message = typeof error === 'string' ? error : (error?.message || 'An error occurred while sending the reset request');
+          const message = typeof error === 'string' ? error : (error?.error?.message || error?.message || 'An error occurred while sending the reset request');
           this.alertService.error(message);
         }
       });
