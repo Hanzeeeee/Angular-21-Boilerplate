@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AccountService } from '@app/_services';
+import { AccountService } from '@app/services';
 
 @Component({
   selector: 'app-account-layout',
@@ -20,3 +20,4 @@ export class LayoutComponent implements OnInit {
   ngOnInit(): void {
   }
 }
+

@@ -4,34 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@environments/environment';
-import { Account } from '@app/_models';
-import { Role } from '@app/_models/role';
-
-export interface RegisterRequest {
-  title: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  acceptTerms: boolean;
-}
-
-export interface AuthResponse {
-  success?: boolean;
-  message?: string;
-  id?: string;
-  title?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  role?: Role | string;
-  jwtToken?: string;
-  token?: string;
-  accessToken?: string;
-  user?: any;
-  [key: string]: any;
-}
+import { Account, RegisterRequest, AuthResponse, Role } from '@app/models';
 
 const baseUrl = `${environment.apiUrl}/accounts`;
 

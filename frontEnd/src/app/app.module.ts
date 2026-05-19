@@ -1,4 +1,4 @@
-import { NgModule, APP_INITIALIZER } from '@angular/core';
+﻿import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -6,7 +6,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { JwtInterceptor, ErrorInterceptor, appInitializer } from './_helpers';
 import { environment } from '@environments/environment';
-import { AccountService } from '@app/_services';
+import { AccountService } from '@app/services';
 import { AlertComponent } from './_components';
 import { HomeComponent } from './home/home.component';
 
@@ -33,3 +33,4 @@ console.log('Environment production:', environment.production);
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+

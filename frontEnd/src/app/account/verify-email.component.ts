@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { first } from 'rxjs/operators';
-import { AccountService, AlertService } from '@app/_services';
+import { AccountService, AlertService } from '@app/services';
 
 enum EmailStatus {
   Verifying,
@@ -42,3 +42,4 @@ export class VerifyEmailComponent implements OnInit {
       });
   }
 }
+

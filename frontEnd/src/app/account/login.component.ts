@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, finalize } from 'rxjs/operators';
-import { AccountService, AlertService } from '@app/_services';
+import { AccountService, AlertService } from '@app/services';
 
 @Component({
   selector: 'app-login',
@@ -58,7 +58,9 @@ export class LoginComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Login error:', error);
-          const message = error?.error?.message || error?.message || (typeof error === 'string' ? error : 'Login failed. Please verify your credentials and try again.');
+          const message = typeof error === 'string'
+            ? error
+            : error?.error?.message || error?.message || 'Login failed. Please verify your credentials and try again.';
           this.alertService.error(message);
         }
       });

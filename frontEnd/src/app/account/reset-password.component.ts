@@ -2,8 +2,8 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, finalize } from 'rxjs/operators';
-import { AccountService, AlertService } from '@app/_services';
-import { mustMatch } from '@app/_helpers';
+import { AccountService, AlertService } from '@app/services';
+import { mustMatch } from '@app/helpers';
 
 enum TokenStatus {
   Validating,
@@ -87,3 +87,4 @@ export class ResetPasswordComponent implements OnInit {
       });
   }
 }
+

@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, finalize } from 'rxjs/operators';
-import { AccountService, AlertService } from '@app/_services';
+import { AccountService, AlertService } from '@app/services';
 
 @Component({
   selector: 'app-forgot-password',
@@ -50,7 +50,9 @@ export class ForgotPasswordComponent implements OnInit {
           this.alertService.success('Please check your email for password reset instructions');
         },
         error: (error: any) => {
-          const message = typeof error === 'string' ? error : (error?.error?.message || error?.message || 'An error occurred while sending the reset request');
+          const message = typeof error === 'string'
+            ? error
+            : error?.error?.message || error?.message || 'An error occurred while sending the reset request';
           this.alertService.error(message);
         }
       });

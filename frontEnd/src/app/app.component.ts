@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { AccountService } from '@app/_services';
-import { Account, Role } from '@app/_models';
+﻿import { Component, OnInit } from '@angular/core';
+import { AccountService } from '@app/services';
+import { Account, Role } from '@app/models';
 
 @Component({
   selector: 'app-root',
@@ -24,3 +24,4 @@ export class AppComponent implements OnInit {
     this.accountService.logout();
   }
 }
+

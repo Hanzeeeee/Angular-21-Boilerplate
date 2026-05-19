@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AccountService } from '@app/_services';
+import { AccountService } from '@app/services';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -56,4 +56,5 @@ export class ErrorInterceptor implements HttpInterceptor {
     );
   }
 }
+
 

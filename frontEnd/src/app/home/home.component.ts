@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { AccountService } from '@app/_services';
-import { Account } from '@app/_models';
+﻿import { Component, OnInit } from '@angular/core';
+import { AccountService } from '@app/services';
+import { Account } from '@app/models';
 
 @Component({
   selector: 'app-home',
@@ -16,3 +16,4 @@ export class HomeComponent implements OnInit {
     this.account = this.accountService.accountValue;
   }
 }
+

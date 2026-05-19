@@ -2,8 +2,9 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, finalize } from 'rxjs/operators';
-import { AccountService, AlertService } from '@app/_services';
-import { mustMatch } from '@app/_helpers';
+import { AccountService, AlertService } from '@app/services';
+import { mustMatch } from '@app/helpers';
+import { RegisterRequest } from '@app/models';
 
 @Component({
   selector: 'app-register',
@@ -73,7 +74,9 @@ export class RegisterComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Registration error:', error);
-          const message = error?.error?.message || error?.message || (typeof error === 'string' ? error : 'Registration failed. Please try again.');
+          const message = typeof error === 'string'
+            ? error
+            : error?.error?.message || error?.message || 'Registration failed. Please try again.';
           this.alertService.error(message);
         }
       });

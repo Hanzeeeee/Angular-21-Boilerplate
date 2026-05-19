@@ -1,6 +1,6 @@
 ﻿import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { finalize, first } from 'rxjs/operators';
-import { AccountService, AlertService } from '@app/_services';
+import { AccountService, AlertService } from '@app/services';
 
 @Component({
   selector: 'app-admin-account-list',
@@ -87,3 +87,4 @@ export class ListComponent implements OnInit, OnDestroy {
       });
   }
 }
+
