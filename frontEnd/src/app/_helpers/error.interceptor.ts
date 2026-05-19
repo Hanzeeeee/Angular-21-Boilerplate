@@ -11,11 +11,18 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
+        // Handle 401 (Unauthorized) and 403 (Forbidden) - logged in user has invalid/expired token
         if ([401, 403].includes(err.status) && this.accountService.accountValue) {
+          console.warn(`Authentication error (${err.status}) - logging out user`);
           this.accountService.logout();
         }
 
-        console.error('HTTP Error Response:', err);
+        console.error('HTTP Error Response:', {
+          status: err.status,
+          statusText: err.statusText,
+          error: err.error,
+          url: request.url
+        });
 
         let errorMessage = 'An unknown error occurred';
         const payload = err.error;

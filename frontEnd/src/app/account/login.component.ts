@@ -24,10 +24,18 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // Initialize form with empty values to ensure no cached state persists
     this.form = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+
+    // If user is already logged in, redirect to home or return URL
+    const account = this.accountService.accountValue;
+    if (account?.jwtToken) {
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+      this.router.navigateByUrl(returnUrl);
+    }
   }
 
   get f() {
@@ -43,7 +51,7 @@ export class LoginComponent implements OnInit {
     }
 
     this.loading = true;
-    this.accountService.login(this.f.email.value.trim(), this.f.password.value)
+    this.accountService.login(this.f.email.value.trim(), this.f.password.value.trim())
       .pipe(
         first(),
         finalize(() => {

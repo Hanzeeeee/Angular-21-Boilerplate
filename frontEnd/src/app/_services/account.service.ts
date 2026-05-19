@@ -33,7 +33,7 @@ export class AccountService {
   login(email: string, password: string) {
     const payload = {
       email: email.trim(),
-      password
+      password: password.trim()
     };
 
     return this.http.post<AuthResponse>(`${baseUrl}/login`, payload, { ...this.httpOptions, withCredentials: true })
@@ -115,12 +115,26 @@ export class AccountService {
       throw new Error(response.message || 'Authentication failed.');
     }
 
+    // Extract user payload - backend may return user data directly or nested in 'user' property
     const payload = response?.user ?? response ?? {};
-    const jwtToken = response?.jwtToken || payload.jwtToken || response?.token || payload.token || response?.accessToken || payload.accessToken;
+    
+    // Extract JWT token with explicit fallbacks for different backend response formats
+    // Try common JWT field names in order of preference
+    let jwtToken = response?.jwtToken || 
+                   payload.jwtToken || 
+                   response?.token || 
+                   payload.token || 
+                   response?.accessToken || 
+                   payload.accessToken;
 
-    if (!jwtToken) {
+    // Verify token was found
+    if (!jwtToken || typeof jwtToken !== 'string' || jwtToken.trim() === '') {
+      console.error('Authentication response missing valid JWT token:', { response, payload });
       throw new Error(response?.message || 'Authentication failed: missing access token. Please verify your login credentials.');
     }
+
+    // Trim the token to remove any accidental whitespace
+    jwtToken = jwtToken.trim();
 
     const account: Account = {
       id: payload.id ?? payload._id,
@@ -132,6 +146,7 @@ export class AccountService {
       jwtToken
     };
 
+    // Update local storage and notify subscribers of new account state
     localStorage.setItem('account', JSON.stringify(account));
     this.accountSubject.next(account);
     this.startRefreshTokenTimer();

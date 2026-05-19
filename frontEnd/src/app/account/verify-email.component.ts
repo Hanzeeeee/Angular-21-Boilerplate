@@ -38,6 +38,10 @@ export class VerifyEmailComponent implements OnInit {
       .pipe(first())
       .subscribe({
         next: () => {
+          // Email verification successful - clear any stale account state before login
+          // This ensures the user must provide fresh credentials at login
+          this.accountService.logout();
+          
           this.alertService.success('Verification successful, you can now login', { keepAfterRouteChange: true });
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
