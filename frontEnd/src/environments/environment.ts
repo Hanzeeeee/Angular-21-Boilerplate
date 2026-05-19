@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://ipt-2026-backend.onrender.com'
+  apiUrl: 'https://angular-21-boilerplate-2-1.onrender.com' 
 };
