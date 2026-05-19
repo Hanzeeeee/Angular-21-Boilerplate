@@ -5,7 +5,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { JwtInterceptor, ErrorInterceptor, appInitializer } from './_helpers';
-import { fakeBackendProvider } from './_helpers/fake-backend';
 import { environment } from '@environments/environment';
 import { AccountService } from '@app/_services';
 import { AlertComponent } from './_components';
@@ -28,9 +27,7 @@ console.log('Environment production:', environment.production);
   providers: [
     { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-
-    ...(environment.production ? [] : [fakeBackendProvider])
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
   ],
 
   bootstrap: [AppComponent]

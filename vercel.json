@@ -1,5 +1,6 @@
 {
-  "buildCommand": "cd frontEnd && npm run build",
+  "installCommand": "npm --prefix frontEnd install",
+  "buildCommand": "npm --prefix frontEnd run build",
   "outputDirectory": "frontEnd/dist/angular-21-auth-boilerplate",
   "rewrites": [
     {
