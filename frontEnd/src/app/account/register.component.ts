@@ -66,12 +66,14 @@ export class RegisterComponent implements OnInit {
         finalize(() => this.loading = false)
       )
       .subscribe({
-        next: () => {
-          this.alertService.success('Sign up successful, please check your email for verification instructions', { keepAfterRouteChange: true });
+        next: (response: any) => {
+          const message = response?.message || 'Sign up successful, please check your email for verification instructions';
+          this.alertService.success(message, { keepAfterRouteChange: true });
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
         error: (error: any) => {
-          const message = typeof error === 'string' ? error : (error?.message || 'An error occurred during registration');
+          console.error('Registration error:', error);
+          const message = error?.error?.message || error?.message || (typeof error === 'string' ? error : 'Registration failed. Please try again.');
           this.alertService.error(message);
         }
       });

@@ -18,6 +18,8 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
+  success?: boolean;
+  message?: string;
   id?: string;
   title?: string;
   firstName?: string;
@@ -77,7 +79,7 @@ export class AccountService {
   }
 
   register(account: RegisterRequest) {
-    return this.http.post<{ message: string }>(`${baseUrl}/register`, account, this.httpOptions);
+    return this.http.post<{ success: boolean; message: string }>(`${baseUrl}/register`, account, this.httpOptions);
   }
 
   verifyEmail(token: string) {
@@ -131,11 +133,15 @@ export class AccountService {
   }
 
   private processAuthResponse(response: AuthResponse): Account {
+    if (response?.success === false) {
+      throw new Error(response.message || 'Authentication failed.');
+    }
+
     const payload = response?.user ?? response ?? {};
     const jwtToken = payload.jwtToken || payload.token || payload.accessToken;
 
     if (!jwtToken) {
-      throw new Error('Authentication failed: missing access token. Please verify your login credentials.');
+      throw new Error(response?.message || 'Authentication failed: missing access token. Please verify your login credentials.');
     }
 
     const account: Account = {

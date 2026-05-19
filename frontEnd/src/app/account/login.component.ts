@@ -57,7 +57,9 @@ export class LoginComponent implements OnInit {
           this.router.navigateByUrl(returnUrl);
         },
         error: (error: any) => {
-          this.alertService.error(error);
+          console.error('Login error:', error);
+          const message = error?.error?.message || error?.message || (typeof error === 'string' ? error : 'Login failed. Please verify your credentials and try again.');
+          this.alertService.error(message);
         }
       });
   }
