@@ -36,7 +36,7 @@ export class AccountService {
       password
     };
 
-    return this.http.post<AuthResponse>(`${baseUrl}/authenticate`, payload, { ...this.httpOptions, withCredentials: true })
+    return this.http.post<AuthResponse>(`${baseUrl}/login`, payload, { ...this.httpOptions, withCredentials: true })
       .pipe(map(response => this.processAuthResponse(response)));
   }
 

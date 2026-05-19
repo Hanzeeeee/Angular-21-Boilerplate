@@ -28,6 +28,12 @@ export class VerifyEmailComponent implements OnInit {
     const token = this.route.snapshot.queryParams['token'];
     this.router.navigate([], { relativeTo: this.route, replaceUrl: true });
 
+    if (!token) {
+      this.alertService.error('Verification token is missing. Please use the link from your email.');
+      this.emailStatus = EmailStatus.Failed;
+      return;
+    }
+
     this.accountService.verifyEmail(token)
       .pipe(first())
       .subscribe({
