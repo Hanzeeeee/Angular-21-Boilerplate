@@ -116,7 +116,7 @@ export class AccountService {
     }
 
     const payload = response?.user ?? response ?? {};
-    const jwtToken = payload.jwtToken || payload.token || payload.accessToken;
+    const jwtToken = response?.jwtToken || payload.jwtToken || response?.token || payload.token || response?.accessToken || payload.accessToken;
 
     if (!jwtToken) {
       throw new Error(response?.message || 'Authentication failed: missing access token. Please verify your login credentials.');

@@ -36,7 +36,10 @@ export class VerifyEmailComponent implements OnInit {
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
         error: (error: any) => {
-          this.alertService.error(error || 'Email verification failed');
+          const message = typeof error === 'string'
+            ? error
+            : error?.error?.message || error?.message || 'Email verification failed';
+          this.alertService.error(message);
           this.emailStatus = EmailStatus.Failed;
         }
       });

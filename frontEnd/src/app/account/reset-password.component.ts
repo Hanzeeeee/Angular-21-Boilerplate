@@ -82,7 +82,10 @@ export class ResetPasswordComponent implements OnInit {
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
         error: (error: any) => {
-          this.alertService.error(error);
+          const message = typeof error === 'string'
+            ? error
+            : error?.error?.message || error?.message || 'Password reset failed. Please try again.';
+          this.alertService.error(message);
         }
       });
   }
