@@ -35,7 +35,8 @@ export class VerifyEmailComponent implements OnInit {
           this.alertService.success('Verification successful, you can now login', { keepAfterRouteChange: true });
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
-        error: () => {
+        error: (error: any) => {
+          this.alertService.error(error || 'Email verification failed');
           this.emailStatus = EmailStatus.Failed;
         }
       });

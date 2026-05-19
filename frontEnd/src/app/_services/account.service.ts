@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { Account } from '@app/_models';
+import { Role } from '@app/_models/role';
 
 export interface RegisterRequest {
   title: string;
@@ -14,6 +15,20 @@ export interface RegisterRequest {
   password: string;
   confirmPassword: string;
   acceptTerms: boolean;
+}
+
+export interface AuthResponse {
+  id?: string;
+  title?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: Role | string;
+  jwtToken?: string;
+  token?: string;
+  accessToken?: string;
+  user?: any;
+  [key: string]: any;
 }
 
 const baseUrl = `${environment.apiUrl}/accounts`;
@@ -31,7 +46,8 @@ export class AccountService {
     private router: Router,
     private http: HttpClient
   ) {
-    this.accountSubject = new BehaviorSubject<Account | null>(JSON.parse(localStorage.getItem('account') || 'null') as Account | null);
+    const savedAccount = localStorage.getItem('account');
+    this.accountSubject = new BehaviorSubject<Account | null>(savedAccount ? JSON.parse(savedAccount) as Account : null);
     this.account = this.accountSubject.asObservable();
   }
 
@@ -40,17 +56,15 @@ export class AccountService {
   }
 
   login(email: string, password: string) {
-    return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { ...this.httpOptions, withCredentials: true })
-      .pipe(map((account: any) => {
-        localStorage.setItem('account', JSON.stringify(account));
-        this.accountSubject.next(account as Account);
-        this.startRefreshTokenTimer();
-        return account;
-      }));
+    return this.http.post<AuthResponse>(`${baseUrl}/authenticate`, { email, password }, { ...this.httpOptions, withCredentials: true })
+      .pipe(map(response => this.processAuthResponse(response)));
   }
 
   logout() {
-    this.http.post<any>(`${baseUrl}/revoke-token`, {}, { withCredentials: true }).subscribe();
+    this.http.post<any>(`${baseUrl}/revoke-token`, {}, { withCredentials: true }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
     this.stopRefreshTokenTimer();
     this.accountSubject.next(null);
     localStorage.removeItem('account');
@@ -58,33 +72,28 @@ export class AccountService {
   }
 
   refreshToken() {
-    return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { ...this.httpOptions, withCredentials: true })
-      .pipe(map((account: any) => {
-        localStorage.setItem('account', JSON.stringify(account));
-        this.accountSubject.next(account as Account);
-        this.startRefreshTokenTimer();
-        return account;
-      }));
+    return this.http.post<AuthResponse>(`${baseUrl}/refresh-token`, {}, { ...this.httpOptions, withCredentials: true })
+      .pipe(map(response => this.processAuthResponse(response)));
   }
 
   register(account: RegisterRequest) {
-    return this.http.post(`${baseUrl}/register`, account, this.httpOptions);
+    return this.http.post<{ message: string }>(`${baseUrl}/register`, account, this.httpOptions);
   }
 
   verifyEmail(token: string) {
-    return this.http.post(`${baseUrl}/verify-email`, { token }, this.httpOptions);
+    return this.http.post<{ message: string }>(`${baseUrl}/verify-email`, { token }, this.httpOptions);
   }
 
   forgotPassword(email: string) {
-    return this.http.post(`${baseUrl}/forgot-password`, { email }, this.httpOptions);
+    return this.http.post<{ message: string }>(`${baseUrl}/forgot-password`, { email }, this.httpOptions);
   }
 
   validateResetToken(token: string) {
-    return this.http.post(`${baseUrl}/validate-reset-token`, { token }, this.httpOptions);
+    return this.http.post<{ message: string }>(`${baseUrl}/validate-reset-token`, { token }, this.httpOptions);
   }
 
   resetPassword(token: string, password: string, confirmPassword: string) {
-    return this.http.post(`${baseUrl}/reset-password`, { token, password, confirmPassword }, this.httpOptions);
+    return this.http.post<{ message: string }>(`${baseUrl}/reset-password`, { token, password, confirmPassword }, this.httpOptions);
   }
 
   getAll() {
@@ -121,6 +130,31 @@ export class AccountService {
       }));
   }
 
+  private processAuthResponse(response: AuthResponse): Account {
+    const payload = response?.user ?? response ?? {};
+    const jwtToken = payload.jwtToken || payload.token || payload.accessToken;
+
+    if (!jwtToken) {
+      throw new Error('Authentication failed: missing access token. Please verify your login credentials.');
+    }
+
+    const account: Account = {
+      id: payload.id ?? payload._id,
+      title: payload.title,
+      firstName: payload.firstName ?? payload.first_name,
+      lastName: payload.lastName ?? payload.last_name,
+      email: payload.email,
+      role: payload.role,
+      jwtToken
+    };
+
+    localStorage.setItem('account', JSON.stringify(account));
+    this.accountSubject.next(account);
+    this.startRefreshTokenTimer();
+
+    return account;
+  }
+
   private startRefreshTokenTimer() {
     const jwtBase64 = this.accountValue?.jwtToken?.split('.')[1];
     if (!jwtBase64) {
@@ -130,6 +164,10 @@ export class AccountService {
     const jwtToken = JSON.parse(atob(jwtBase64));
     const expires = new Date(jwtToken.exp * 1000);
     const timeout = expires.getTime() - Date.now() - (60 * 1000);
+
+    if (timeout <= 0) {
+      return;
+    }
 
     this.refreshTokenTimeout = setTimeout(() => this.refreshToken().subscribe(), timeout);
   }

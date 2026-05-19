@@ -50,7 +50,17 @@ export class RegisterComponent implements OnInit {
     }
 
     this.loading = true;
-    this.accountService.register(this.form.value as any)
+    const registerRequest = {
+      title: this.f.title.value,
+      firstName: this.f.firstName.value,
+      lastName: this.f.lastName.value,
+      email: this.f.email.value,
+      password: this.f.password.value,
+      confirmPassword: this.f.confirmPassword.value,
+      acceptTerms: this.f.acceptTerms.value
+    };
+
+    this.accountService.register(registerRequest)
       .pipe(
         first(),
         finalize(() => this.loading = false)
@@ -61,7 +71,6 @@ export class RegisterComponent implements OnInit {
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
         error: (error: any) => {
-          console.error('Register error:', error);
           const message = typeof error === 'string' ? error : (error?.message || 'An error occurred during registration');
           this.alertService.error(message);
         }

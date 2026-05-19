@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
+import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AccountService } from '@app/_services';
@@ -9,7 +9,7 @@ export class ErrorInterceptor implements HttpInterceptor {
   constructor(private accountService: AccountService) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(request).pipe(catchError(err => {
+    return next.handle(request).pipe(catchError((err: HttpErrorResponse) => {
       if ([401, 403].includes(err.status) && this.accountService.accountValue) {
         this.accountService.logout();
       }
@@ -17,16 +17,29 @@ export class ErrorInterceptor implements HttpInterceptor {
       console.error('HTTP Error Response:', err);
 
       let errorMessage = 'An unknown error occurred';
-      if (err.error) {
-        if (typeof err.error === 'string') {
-          errorMessage = err.error;
-        } else if (err.error.message) {
-          errorMessage = err.error.message;
-        } else if (err.error.error) {
-          errorMessage = err.error.error;
+      const payload = err.error;
+
+      if (payload) {
+        if (typeof payload === 'string') {
+          errorMessage = payload;
+        } else if (payload.message) {
+          errorMessage = payload.message;
+        } else if (payload.error) {
+          if (typeof payload.error === 'string') {
+            errorMessage = payload.error;
+          } else if (payload.error.message) {
+            errorMessage = payload.error.message;
+          } else if (Array.isArray(payload.error)) {
+            errorMessage = payload.error.map((item: any) => item.message || item).join(' ');
+          }
+        } else if (Array.isArray(payload.errors) && payload.errors.length) {
+          errorMessage = payload.errors.map((item: any) => item.message || item).join(' ');
         } else {
           try {
-            errorMessage = JSON.stringify(err.error);
+            const json = JSON.stringify(payload);
+            if (json !== '{}' && json !== 'null') {
+              errorMessage = json;
+            }
           } catch {
             errorMessage = err.statusText || err.message || errorMessage;
           }
@@ -38,6 +51,6 @@ export class ErrorInterceptor implements HttpInterceptor {
       }
 
       return throwError(() => errorMessage);
-    }));
+    })));
   }
 }

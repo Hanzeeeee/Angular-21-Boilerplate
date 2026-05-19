@@ -1,7 +1,7 @@
 ﻿import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first } from 'rxjs/operators';
+import { first, finalize } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 
 @Component({
@@ -44,7 +44,13 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
     this.accountService.login(this.f.email.value, this.f.password.value)
-      .pipe(first())
+      .pipe(
+        first(),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        })
+      )
       .subscribe({
         next: () => {
           const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
@@ -52,8 +58,6 @@ export class LoginComponent implements OnInit {
         },
         error: (error: any) => {
           this.alertService.error(error);
-          this.loading = false;
-          this.cdr.detectChanges();
         }
       });
   }

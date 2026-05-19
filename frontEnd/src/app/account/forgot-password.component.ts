@@ -41,14 +41,15 @@ export class ForgotPasswordComponent implements OnInit {
     this.accountService.forgotPassword(this.f.email.value)
       .pipe(
         first(),
-        finalize(() => this.loading = false)
+        finalize(() => {
+          this.loading = false;
+        })
       )
       .subscribe({
         next: () => {
           this.alertService.success('Please check your email for password reset instructions');
         },
         error: (error: any) => {
-          console.error('Forgot password error:', error);
           const message = typeof error === 'string' ? error : (error?.message || 'An error occurred while sending the reset request');
           this.alertService.error(message);
         }
