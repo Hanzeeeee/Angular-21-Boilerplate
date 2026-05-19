@@ -14,8 +14,30 @@ export class ErrorInterceptor implements HttpInterceptor {
         this.accountService.logout();
       }
 
-      const error = err.error?.message || err.statusText;
-      return throwError(() => error);
+      console.error('HTTP Error Response:', err);
+
+      let errorMessage = 'An unknown error occurred';
+      if (err.error) {
+        if (typeof err.error === 'string') {
+          errorMessage = err.error;
+        } else if (err.error.message) {
+          errorMessage = err.error.message;
+        } else if (err.error.error) {
+          errorMessage = err.error.error;
+        } else {
+          try {
+            errorMessage = JSON.stringify(err.error);
+          } catch {
+            errorMessage = err.statusText || err.message || errorMessage;
+          }
+        }
+      } else if (err.statusText) {
+        errorMessage = err.statusText;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      return throwError(() => errorMessage);
     }));
   }
 }

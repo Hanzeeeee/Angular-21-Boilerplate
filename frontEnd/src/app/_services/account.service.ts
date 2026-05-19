@@ -6,6 +6,16 @@ import { map } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { Account } from '@app/_models';
 
+export interface RegisterRequest {
+  title: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  acceptTerms: boolean;
+}
+
 const baseUrl = `${environment.apiUrl}/accounts`;
 
 @Injectable({ providedIn: 'root' })
@@ -57,7 +67,7 @@ export class AccountService {
       }));
   }
 
-  register(account: Account) {
+  register(account: RegisterRequest) {
     return this.http.post(`${baseUrl}/register`, account, this.httpOptions);
   }
 

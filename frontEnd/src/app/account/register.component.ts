@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first } from 'rxjs/operators';
+import { first, finalize } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 import { mustMatch } from '@app/_helpers';
 
@@ -13,7 +13,6 @@ import { mustMatch } from '@app/_helpers';
 export class RegisterComponent implements OnInit {
   form!: FormGroup;
   loading = false;
-  submitting = false;
   submitted = false;
 
   constructor(
@@ -50,17 +49,21 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.submitting = true;
-    this.accountService.register(this.form.value)
-      .pipe(first())
+    this.loading = true;
+    this.accountService.register(this.form.value as any)
+      .pipe(
+        first(),
+        finalize(() => this.loading = false)
+      )
       .subscribe({
         next: () => {
           this.alertService.success('Sign up successful, please check your email for verification instructions', { keepAfterRouteChange: true });
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
         error: (error: any) => {
-          this.alertService.error(error);
-          this.submitting = false;
+          console.error('Register error:', error);
+          const message = typeof error === 'string' ? error : (error?.message || 'An error occurred during registration');
+          this.alertService.error(message);
         }
       });
   }
