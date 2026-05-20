@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first, finalize } from 'rxjs/operators';
+import { first, finalize, timeout } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/services';
 import { mustMatch } from '@app/helpers';
 
@@ -41,9 +41,7 @@ export class ResetPasswordComponent implements OnInit {
     });
 
     const token = this.getPasswordResetToken();
-    console.log('[reset-password] Component initialized, token extracted');
-    
-    this.router.navigate([], { relativeTo: this.route, replaceUrl: true, queryParams: {} });
+    console.log('[reset-password] Component initialized, token extracted:', token);
     this.token = token ?? undefined;
 
     if (!token) {
@@ -55,7 +53,13 @@ export class ResetPasswordComponent implements OnInit {
 
     console.log('[reset-password] Validating token...');
     this.accountService.validateResetToken(token)
-      .pipe(first())
+      .pipe(
+        first(),
+        timeout(10000),
+        finalize(() => {
+          console.log('[reset-password] validate token request completed');
+        })
+      )
       .subscribe({
         next: (response: any) => {
           console.log('[reset-password] SUCCESS: Token is valid');
