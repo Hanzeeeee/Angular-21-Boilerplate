@@ -41,25 +41,31 @@ export class ResetPasswordComponent implements OnInit {
     });
 
     const token = this.getPasswordResetToken();
+    console.log('[reset-password] Component initialized, token extracted');
+    
     this.router.navigate([], { relativeTo: this.route, replaceUrl: true, queryParams: {} });
     this.token = token ?? undefined;
 
     if (!token) {
+      console.error('[reset-password] FAIL: No token found in URL');
       this.alertService.error('Reset token is missing. Please use the link from your email.');
       this.tokenStatus = TokenStatus.Invalid;
       return;
     }
 
+    console.log('[reset-password] Validating token...');
     this.accountService.validateResetToken(token)
       .pipe(first())
       .subscribe({
-        next: () => {
+        next: (response: any) => {
+          console.log('[reset-password] SUCCESS: Token is valid');
           this.tokenStatus = TokenStatus.Valid;
         },
         error: (error: any) => {
           const message = typeof error === 'string'
             ? error
             : error?.error?.message || error?.message || 'Reset token validation failed.';
+          console.error('[reset-password] FAIL: Token validation failed', { message, error });
           this.alertService.error(message);
           this.tokenStatus = TokenStatus.Invalid;
         }
@@ -83,19 +89,30 @@ export class ResetPasswordComponent implements OnInit {
     this.alertService.clear();
 
     if (this.form.invalid) {
+      console.error('[reset-password] FAIL: Form is invalid');
+      return;
+    }
+
+    if (!this.token) {
+      console.error('[reset-password] FAIL: Token is missing during submission');
+      this.alertService.error('Reset token is missing. Please refresh the page.');
       return;
     }
 
     this.loading = true;
-    this.accountService.resetPassword(this.token!, this.f.password.value, this.f.confirmPassword.value)
+    console.log('[reset-password] Submitting password reset...');
+    
+    this.accountService.resetPassword(this.token, this.f.password.value, this.f.confirmPassword.value)
       .pipe(
         first(),
         finalize(() => {
           this.loading = false;
+          console.log('[reset-password] Loading state stopped');
         })
       )
       .subscribe({
-        next: () => {
+        next: (response: any) => {
+          console.log('[reset-password] SUCCESS: Password reset completed');
           this.alertService.success('Password reset successful, you can now login', { keepAfterRouteChange: true });
           this.router.navigate(['../login'], { relativeTo: this.route });
         },
@@ -103,6 +120,7 @@ export class ResetPasswordComponent implements OnInit {
           const message = typeof error === 'string'
             ? error
             : error?.error?.message || error?.message || 'Password reset failed. Please try again.';
+          console.error('[reset-password] FAIL: Password reset failed', { message, error });
           this.alertService.error(message);
         }
       });
