@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first, finalize, timeout } from 'rxjs/operators';
@@ -29,7 +29,8 @@ export class ResetPasswordComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private accountService: AccountService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private cd: ChangeDetectorRef  // 👈 added
   ) { }
 
   ngOnInit() {
@@ -48,6 +49,7 @@ export class ResetPasswordComponent implements OnInit {
       console.error('[reset-password] FAIL: No token found in URL');
       this.alertService.error('Reset token is missing. Please use the link from your email.');
       this.tokenStatus = TokenStatus.Invalid;
+      this.cd.detectChanges(); // 👈 added
       return;
     }
 
@@ -58,12 +60,14 @@ export class ResetPasswordComponent implements OnInit {
         timeout(10000),
         finalize(() => {
           console.log('[reset-password] validate token request completed');
+          this.cd.detectChanges(); // 👈 added
         })
       )
       .subscribe({
         next: (response: any) => {
           console.log('[reset-password] SUCCESS: Token is valid');
           this.tokenStatus = TokenStatus.Valid;
+          this.cd.detectChanges(); // 👈 added - forces form to show
         },
         error: (error: any) => {
           const message = typeof error === 'string'
@@ -72,6 +76,7 @@ export class ResetPasswordComponent implements OnInit {
           console.error('[reset-password] FAIL: Token validation failed', { message, error });
           this.alertService.error(message);
           this.tokenStatus = TokenStatus.Invalid;
+          this.cd.detectChanges(); // 👈 added - forces error to show
         }
       });
   }
@@ -112,6 +117,7 @@ export class ResetPasswordComponent implements OnInit {
         finalize(() => {
           this.loading = false;
           console.log('[reset-password] Loading state stopped');
+          this.cd.detectChanges(); // 👈 added
         })
       )
       .subscribe({
@@ -126,8 +132,8 @@ export class ResetPasswordComponent implements OnInit {
             : error?.error?.message || error?.message || 'Password reset failed. Please try again.';
           console.error('[reset-password] FAIL: Password reset failed', { message, error });
           this.alertService.error(message);
+          this.cd.detectChanges(); // 👈 added
         }
       });
   }
 }
-
